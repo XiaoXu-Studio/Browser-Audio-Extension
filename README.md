@@ -10,7 +10,7 @@
 
 ## 下载与安装
 
-1. 打开本仓库的 [Releases](https://github.com/secure-artifacts/Browser-Audio-Extension/releases)，下载 `Browser-Audio-Extension-v版本号.zip`，不要误选 GitHub 自动生成的 Source code 压缩包。
+1. 打开本仓库的 [Releases](https://github.com/XiaoXu-Studio/Browser-Audio-Extension/releases)，下载 `Browser-Audio-Extension-v版本号.zip`，不要误选 GitHub 自动生成的 Source code 压缩包。
 2. 完整解压到一个长期保留的文件夹；该文件夹根目录应直接包含 `manifest.json`。
 3. 打开 `chrome://extensions`（Edge 为 `edge://extensions`，Brave 为 `brave://extensions`）。
 4. 开启开发者模式，点击「加载已解压的扩展程序」，选择上一步文件夹。
@@ -86,7 +86,7 @@ git tag -a v1.2.2 -m "Release version 1.2.2"
 git push origin v1.2.2
 ```
 
-4. 查看 [Actions](https://github.com/secure-artifacts/Browser-Audio-Extension/actions) 等待成功，再到 [Releases](https://github.com/secure-artifacts/Browser-Audio-Extension/releases) 获取 ZIP。
+4. 查看 [Actions](https://github.com/XiaoXu-Studio/Browser-Audio-Extension/actions) 等待成功，再到 [Releases](https://github.com/XiaoXu-Studio/Browser-Audio-Extension/releases) 获取 ZIP。
 
 CI 会测试、构建 `dist/`、把其中的文件打成根目录含 `manifest.json` 的 ZIP、生成最终 ZIP 的 Attestation，再由 `github-actions[bot]` 上传。不要手动创建 Release 或上传、替换下载包，也不要把个人 Token 配置为 Release 上传凭据。
 
@@ -111,7 +111,7 @@ git push origin v1.2.2
 安装 GitHub CLI 后，可以对下载的 ZIP 运行（请替换成实际文件名和标签）：
 
 ```sh
-gh attestation verify Browser-Audio-Extension-v1.2.2.zip --repo secure-artifacts/Browser-Audio-Extension --signer-workflow secure-artifacts/Browser-Audio-Extension/.github/workflows/release.yml --source-ref refs/tags/v1.2.2 --deny-self-hosted-runners
+gh attestation verify Browser-Audio-Extension-v1.2.2.zip --repo XiaoXu-Studio/Browser-Audio-Extension --signer-workflow XiaoXu-Studio/Browser-Audio-Extension/.github/workflows/release.yml --source-ref refs/tags/v1.2.2 --deny-self-hosted-runners
 ```
 
 这验证文件与指定仓库、标签、工作流的构建来源关系，不代表不存在漏洞，也不等于平台审核通过。
