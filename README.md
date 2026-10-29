@@ -2,6 +2,8 @@
 
 当前源码版本：1.2.2（安全加固，音频处理与 1.2.1 相同）。是否已经发布请以 Releases 中实际存在的版本为准。
 
+维护与发布只使用个人仓库 `XiaoXu-Studio/Browser-Audio-Extension`，后续更新不再推送到 `secure-artifacts` 组织仓库。
+
 适用于支持 remote-only 音频约束的桌面 Chromium 系浏览器的 Manifest V3 扩展（最低版本 151）。安装后默认开启，在普通网页申请麦克风时启用远端回声抑制，关闭自动增益和降噪，用于 VoiceMeeter／立体声混音传入通话的场景。
 
 1.2.1 将 echoCancellation 从 false 修正为 { exact: "remote-only" }，不再强制关闭所有回声消除。用户已反馈修复后的实际通话测试正常；通话数量、时长和设备覆盖未单独记录，因此不承诺任意数量通话均无回音。此模式不保证对每个标签页单独消除自身声音。不支持此约束时报告采集失败，不静默退回 false 或 true。
