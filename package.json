@@ -1,11 +1,11 @@
 {
   "name": "browser-audio-extension",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "description": "Browser audio compatibility extension",
-  "engines": { "node": ">=20" },
+  "engines": { "node": ">=24" },
   "scripts": {
-    "test": "node --test tests/unit-tests.cjs tests/build-tests.cjs",
+    "test": "node --test tests/unit-tests.cjs tests/build-tests.cjs tests/security-tests.cjs",
     "build": "node scripts/build.cjs",
     "verify:zip": "node scripts/verify-zip.cjs"
   }

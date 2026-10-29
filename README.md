@@ -1,6 +1,6 @@
 # 浏览器拉线助手
 
-当前版本：1.2.1（远端回声抑制修复）。
+当前源码版本：1.2.2（安全加固，音频处理与 1.2.1 相同）。是否已经发布请以 Releases 中实际存在的版本为准。
 
 适用于支持 remote-only 音频约束的桌面 Chromium 系浏览器的 Manifest V3 扩展（最低版本 151）。安装后默认开启，在普通网页申请麦克风时启用远端回声抑制，关闭自动增益和降噪，用于 VoiceMeeter／立体声混音传入通话的场景。
 
@@ -23,6 +23,8 @@
 
 面板能区分等待采集、等待刷新、采集失败、静音、无法确认、远端回声抑制已启用。
 最后一种状态仅代表已检查的音轨原生设置回报 remote-only 且自动增益和降噪为 false，不证明对方已收到声音或实际无回音，也不保证网站没有后续处理。
+
+检测函数运行在网页的 MAIN 环境，网页自身可以干预或伪造诊断结果，因此面板不是防篡改的安全证明。异常数据不会按成功处理；检测超时后会释放操作队列，但不能终止网页自身的死循环。
 
 远端回声抑制并非完整的音频路由隔离，仍可能出现回声、啸叫；建议戴耳机，先低音量测试。
 如果无法使用麦克风，可关闭插件、刷新网页后重试。禁用或卸载后也需要刷新已打开的页面。
@@ -56,6 +58,8 @@ npm run build
 
 GitHub Actions 负责生成 ZIP、构建来源证明（Attestation）并上传 Release。来源证明不是杀毒认证，也不是 Chrome Web Store 审核。
 本流程不包含商店上架、CRX 签名或自动更新；平台是否通过审核以实际审核结果为准。
+
+发布工具从仓库内的已审查源码、锁文件和本地安全补丁构建，不再执行旧上游 Action 的预编译包。完整安装树扫描、补丁回归测试、类型检查、原有工具测试及实际 bundle 输入核对均为发布前置条件。维护方式和已知边界见 [发布工具说明](release-tools/README.md)。
 
 ## 如何发布新版本
 
@@ -107,7 +111,7 @@ git push origin v1.2.2
 安装 GitHub CLI 后，可以对下载的 ZIP 运行（请替换成实际文件名和标签）：
 
 ```sh
-gh attestation verify Browser-Audio-Extension-v1.2.1.zip --repo secure-artifacts/Browser-Audio-Extension --signer-workflow secure-artifacts/Browser-Audio-Extension/.github/workflows/release.yml --source-ref refs/tags/v1.2.1 --deny-self-hosted-runners
+gh attestation verify Browser-Audio-Extension-v1.2.2.zip --repo secure-artifacts/Browser-Audio-Extension --signer-workflow secure-artifacts/Browser-Audio-Extension/.github/workflows/release.yml --source-ref refs/tags/v1.2.2 --deny-self-hosted-runners
 ```
 
 这验证文件与指定仓库、标签、工作流的构建来源关系，不代表不存在漏洞，也不等于平台审核通过。

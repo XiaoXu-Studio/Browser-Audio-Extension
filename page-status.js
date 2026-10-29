@@ -12,6 +12,15 @@ const microphoneErrors = {
   UnknownError: "音频请求失败。可关闭插件、刷新网页后重试。"
 };
 
+function validDiagnostic(item) {
+  if (!item || typeof item.version !== "string" || item.version.length > 32 ||
+      typeof item.available !== "boolean" || typeof item.hooked !== "boolean") return false;
+  if (!["live", "processing", "unknown", "muted", "pending"].every(key =>
+    Number.isSafeInteger(item[key]) && item[key] >= 0 && item[key] <= 10000)) return false;
+  return ["processing", "unknown", "muted"].every(key => item[key] <= item.live) &&
+    (item.error === null || Object.hasOwn(microphoneErrors, item.error));
+}
+
 function summarizeFrames(results, enabled, version) {
   const frames = results.map(item => item.result).filter(item => item && item.version);
   if (!enabled) return frames.length
@@ -19,6 +28,9 @@ function summarizeFrames(results, enabled, version) {
     : { code: "off", tone: "neutral", text: "已关闭", hint: "需要时再开启；开启后请刷新通话网页。" };
   if (!frames.length || frames.some(item => item.version !== version))
     return { code: "reload", tone: "warn", text: "需要刷新网页", hint: "此页面尚未加载当前插件。保存内容后刷新，再重新通话。" };
+  // MAIN-world diagnostics are untrusted observations, never authorization data.
+  if (frames.some(item => !validDiagnostic(item)))
+    return { code: "unknown", tone: "warn", text: "无法完整确认", hint: "网页返回的检测数据不完整或异常。请刷新网页后重试。" };
   const count = key => frames.reduce((total, item) => total + (Number.isFinite(item[key]) ? Math.max(0, Math.min(item[key], 10000)) : 0), 0);
   const error = frames.find(item => Object.hasOwn(microphoneErrors, item.error));
   if (error) return { code: "capture-error", tone: "warn", text: "检测到音频请求失败", hint: microphoneErrors[error.error] };
@@ -38,16 +50,35 @@ function summarizeFrames(results, enabled, version) {
 
 async function inspectTab(tabId, enabled) {
   if (!Number.isInteger(tabId)) return { code: "no-page", tone: "neutral", text: "请打开通话网页", hint: "在通话网页打开此面板，可查看当前页面状态。" };
+  let timer;
   try {
-    const results = await chrome.scripting.executeScript({
+    const inspection = chrome.scripting.executeScript({
       target: { tabId, allFrames: true }, world: "MAIN",
       func: () => {
         const inspect = globalThis[Symbol.for("byUSXiaoxu.audioCompat.diagnostic")];
-        return typeof inspect === "function" ? inspect() : null;
+        if (typeof inspect !== "function") return null;
+        const result = inspect();
+        if (!result || typeof result !== "object") return null;
+        // Project synchronous scalar fields only; never return a page-controlled promise or object graph.
+        const fields = ["version", "available", "hooked", "live", "processing", "unknown", "muted", "pending", "error"];
+        const safe = {};
+        for (const key of fields) {
+          const value = result[key];
+          safe[key] = value === null || typeof value === "boolean" ||
+            (typeof value === "number" && Number.isFinite(value)) ||
+            (typeof value === "string" && value.length <= 64) ? value : null;
+        }
+        return safe;
       }
     });
+    // A hung or hostile page must not indefinitely block the popup's command queue.
+    const results = await Promise.race([inspection, new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Inspection timed out")), 3000);
+    })]);
     return summarizeFrames(results, enabled, chrome.runtime.getManifest().version);
   } catch {
     return { code: "restricted", tone: "neutral", text: "此页面无法检测", hint: "浏览器设置页、商店等页面不支持；普通网页请检查插件的网站访问权限。" };
+  } finally {
+    clearTimeout(timer);
   }
 }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "浏览器拉线助手",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "安装后默认开启，为网页麦克风启用远端回声抑制，关闭自动增益和降噪。切换后刷新网页。",
   "minimum_chrome_version": "151",
   "permissions": ["scripting", "storage"],
